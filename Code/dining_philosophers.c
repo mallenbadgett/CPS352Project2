@@ -3,7 +3,7 @@
  * Project 2 - Problem 2
  * Dining Philosophers Simulation
  *
- * Author: Camya Helton-Thomas
+ * Author: Camya Helton-Thomas, Jalen, Markala
  */
 
 SECTION 1: INCLUDE LIBRARIES

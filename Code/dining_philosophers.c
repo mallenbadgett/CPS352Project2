@@ -23,7 +23,7 @@ SECTION 2: DEFINE CONSTANTS
     - Number of philosophers = 5
     - Number of forks = 5
 
-int philosopherts= 5;
+int philosophers= 5;
 
 int forks = 5;
 
@@ -36,6 +36,8 @@ SECTION 3: DECLARE GLOBAL VARIABLES
 
 
 int[] forkArray = new int[5];
+
+string[] states = ["Thinking", "Becoming hungry", "Eating"];
 
 
 SECTION 4: CREATE DISPLAY FUNCTION

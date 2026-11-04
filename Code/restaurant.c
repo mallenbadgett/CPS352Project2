@@ -50,7 +50,7 @@ pthread_cond_t not_full;
 pthread_cond_t not_empty;
 
  
-/*SECTION 4: CREATE BUFFER FUNCTIONS
+/*SECTION 4: BUFFER FUNCTIONS
   *  - put(): add a meal to the buffer
   *  - get(): take a meal out of the buffer
   *  - % capacity wraps the index back to 0
@@ -118,7 +118,7 @@ void *chef(void *arg)
 
 
  
-/*SECTION 6: CREATE WAITER FUNCTION
+/*SECTION 6:WAITER FUNCTION
   *  - Get waiter ID
   *  - Repeat until there are no meals left
   *  - Lock the buffer
@@ -164,7 +164,7 @@ void *waiter(void *arg)
 }
  
  
-/*SECTION 7: CREATE MAIN FUNCTION
+/*SECTION 7:MAIN FUNCTION
   *  - Ask user for C W B M
   *  - Validates input
   *  - Initialize synchronization variables

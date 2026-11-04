@@ -74,6 +74,7 @@ int main() {
     printf("C = number of chefs(1-5), W = number of waiters (1-5)\n");
     printf("B = buffer capacity (5-20), M = the number of meals each chef perpares(1-20)\n");
     printf("Enter C W B M: ");
+    
     scanf("%d %d %d %d", &C, &W, &capacity, &chefs_per_meals);
     total_num_meals = C * chefs_per_meals;
  
@@ -91,6 +92,7 @@ int main() {
  
     for (int i = 0; i < C; i++)
         pthread_join(chefs[i], NULL);
+
     for (int i = 0; i < W; i++)
         pthread_join(waiters[i], NULL);
  

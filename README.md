@@ -1,7 +1,7 @@
 CPS 356 – Operating Systems
 Project 2 – Fall 2026
 
-Team Members:Camya Helton-Thomas, ,
+Team Members:Camya Helton-Thomas, Markala Allen-Badgett, Jalen Anderson
 
 Instructor: Dr. Tam Nguyen
 Programming Language: C
@@ -12,7 +12,7 @@ Compiler: GCC
 
 This project focuses on multithreading, synchronization, and shared resources in operating systems. The project contains two programs written in C using POSIX threads.
 
-Problem 1: Chef-Waiter Restaurant System
+Problem 1: Chef Waiter Restaurant System
 
 The first program simulates a restaurant where multiple chefs prepare meals and multiple waiters serve them. The chefs and waiters work at the same time and share a limited buffer that stores prepared meals.
 

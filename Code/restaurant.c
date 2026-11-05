@@ -191,6 +191,7 @@ int main(void)
  
     pthread_t chefs[MAX_CHEFS];
     pthread_t waiters[MAX_WAITERS];
+    
     int chefIDs[MAX_CHEFS];
     int waiterIDs[MAX_WAITERS];
  
@@ -220,6 +221,7 @@ int main(void)
  
     printf("\nExecution Summary\n");
     printf("Total meals prepared: %d\n", prepared);
+
     printf("Total meals served: %d\n", served);
     printf("Maximum buffer: %d\n", max_usage);
  

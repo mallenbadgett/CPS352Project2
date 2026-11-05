@@ -14,15 +14,11 @@ This project focuses on multithreading, synchronization, and shared resources in
 
 Problem 1: Chef Waiter Restaurant System
 
-The first program simulates a restaurant where multiple chefs prepare meals and multiple waiters serve them. The chefs and waiters work at the same time and share a limited buffer that stores prepared meals.
-
-The program uses mutex locks and semaphores to control access to the shared buffer and prevent race conditions, buffer overflow, and buffer underflow.
+The first program simulates a restaurant where multiple chefs prepare meals and multiple waiters serve them. The chefs and waiters work at the same time and share a limited buffer that stores prepared meals. This program uses mutex locks to control access to the shared buffer and prevent race conditions, and buffer overflow/underflow.
 
 Problem 2: Dining Philosophers Simulation
 
-The second program simulates five philosophers sitting around a table with five forks. Each philosopher switches between thinking, hungry, eating, and done states.
-
-The program uses mutex locks, condition variables, and a ticket system to manage fork access and prevent deadlock and starvation.
+The second program simulates five philosophers sitting around a table with five forks. Each philosopher switches between thinking, hungry, eating, and done states.The program uses mutex locks, condition variables, and ticket system to manage fork access and prevent deadlock and/or potential starvation.
 
 2. SYSTEM REQUIREMENTS
 
@@ -41,7 +37,7 @@ Compile the program using the following command:
 
 gcc -pthread restaurant.c -o restaurant
 
-This command compiles the source code and creates an executable named restaurant.
+This command will compile the source code and creates an executable named restaurant.
 
 4. PROBLEM 1 – EXECUTION INSTRUCTIONS
 
@@ -76,15 +72,12 @@ The total number of meals is calculated by multiplying the number of chefs by th
 The program displays messages showing when chefs prepare meals and when waiters serve meals.
 
 Example output:
-
 Chef 1 prepared meal 1 (buffer size = 1)
 Chef 2 prepared meal 2 (buffer size = 2)
 Waiter 1 served meal 1 (buffer size = 1)
 Waiter 2 served meal 2 (buffer size = 0)
 
-The program continues until all meals have been prepared and served.
-
-At the end, the program displays an execution summary.
+The program continues until all meals have been prepared and served. At the end the program displays an execution summary.
 
 Example:
 
@@ -225,20 +218,14 @@ Presentation.pptx
 
 README.txt
 
-The Code folder contains the source code for both problems. The Report folder contains the technical report explaining the solutions and results. The Presentation folder contains the project slides. The README.txt file provides instructions for compiling and running both programs. There is also some test files.
+The "Code" folder contains the source code for both problems. The "Report" folder contains the technical report explaining the solutions and results. The "Presentation" folder contains the project slides. The README.txt file provides instructions for compiling and running both programs.
 
 12. ADDITIONAL NOTES
 
 Both programs were developed in C using POSIX threads.
-
 The execution order may vary because multiple threads operate concurrently.
-
 Problem 1 checks that the input values are within the required ranges before starting execution.
-
 Problem 1 uses dynamically allocated memory for the shared buffer and releases that memory after execution.
-
 Problem 2 requires the user to enter a positive number of eating cycles.
-
-Problem 2 uses a ticket-based system to coordinate philosopher access to shared forks.
-
+Problem 2 uses a ticket like system to coordinate philosopher access to shared forks.
 Both programs demonstrate how synchronization can be used to manage shared resources in an operating system.

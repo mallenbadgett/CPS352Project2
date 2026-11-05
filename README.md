@@ -4,6 +4,7 @@ Project 2 – Fall 2026
 Team Members:Camya Helton-Thomas, Markala Allen-Badgett, Jalen Anderson
 
 Instructor: Dr. Tam Nguyen
+
 Programming Language: C
 Operating System: Linux / Ubuntu
 Compiler: GCC

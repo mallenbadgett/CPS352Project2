@@ -15,6 +15,7 @@
  
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
  
 /* Section 2
 * -Max buffer capacity = 20
@@ -85,34 +86,30 @@ int get(void)
 void *chef(void *arg)
 {
     int id = *(int *)arg;
- 
     for (int i = 0; i < chefs_per_meals; i++)
     {
+        usleep(1000);
+
         pthread_mutex_lock(&lock);
- 
-        // Wait if the buffer is full
+
         while (size == capacity)
         {
             pthread_cond_wait(&not_full, &lock);
         }
- 
-        // Prepare a meal and add it to the buffer
+
         prepared++;
         put(prepared);
- 
-        // Track the largest buffer size created
+
         if (size > max_usage)
         {
             max_usage = size;
         }
- 
         printf("Chef %d prepared meal %d (buffer size = %d)\n", id, prepared, size);
- 
-        // Tells a waiter a meal is ready to serve
+
         pthread_cond_signal(&not_empty);
+
         pthread_mutex_unlock(&lock);
     }
- 
     return NULL;
 }
  
@@ -130,34 +127,30 @@ void *chef(void *arg)
 void *waiter(void *arg)
 {
     int id = *(int *)arg;
- 
     while (1)
     {
         pthread_mutex_lock(&lock);
- 
-        // Will wait if chefs are still cooking
         while (size == 0 && done == 0)
         {
             pthread_cond_wait(&not_empty, &lock);
         }
- 
-        // Will stop if the buffer is empty and all chefs have finished
         if (size == 0 && done == 1)
         {
             pthread_mutex_unlock(&lock);
             break;
         }
- 
-        // Will take a meal and then  serve it
+
         int meal = get();
         served++;
+
         printf("Waiter %d served meal %d (buffer size = %d)\n", id, meal, size);
- 
-        // Tells a chef there is room to move forward
+
         pthread_cond_signal(&not_full);
+
         pthread_mutex_unlock(&lock);
+
+        usleep(1000);
     }
- 
     return NULL;
 }
  
@@ -183,14 +176,17 @@ int main(void)
     printf("Enter C W B M: ");
  
     if (scanf("%d %d %d %d", &C, &W, &capacity, &chefs_per_meals) != 4 ||
-        C < 1 || C > MAX_CHEFS || W < 1 || W > MAX_WAITERS || capacity < 5 || capacity > MAX_BUFFER || chefs_per_meals < 1 || chefs_per_meals > 20)
+        C < 1 || C > MAX_CHEFS || W < 1 || W > MAX_WAITERS || capacity < 5 || 
+        capacity > MAX_BUFFER || chefs_per_meals < 1 || chefs_per_meals > 20)
     {
         printf("Invalid input, please try again\n");
         return 1;
     }
  
     pthread_mutex_init(&lock, NULL);
+
     pthread_cond_init(&not_full, NULL);
+
     pthread_cond_init(&not_empty, NULL);
  
     pthread_t chefs[MAX_CHEFS];
@@ -202,12 +198,11 @@ int main(void)
         chefIDs[i] = i + 1;
         pthread_create(&chefs[i], NULL, chef, &chefIDs[i]);
     }
- 
+
     for (int i = 0; i < W; i++) {
         waiterIDs[i] = i + 1;
         pthread_create(&waiters[i], NULL, waiter, &waiterIDs[i]);
     }
- 
     for (int i = 0; i < C; i++) {
         pthread_join(chefs[i], NULL);
     }
@@ -229,7 +224,9 @@ int main(void)
     printf("Maximum buffer: %d\n", max_usage);
  
     pthread_mutex_destroy(&lock);
+
     pthread_cond_destroy(&not_full);
+
     pthread_cond_destroy(&not_empty);
  
     return 0;

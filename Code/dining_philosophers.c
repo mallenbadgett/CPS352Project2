@@ -1,75 +1,48 @@
+
 /*
  * CPS 356 - Operating Systems
  * Project 2 - Problem 2
  * Dining Philosophers Simulation
  *
- * Author: Camya Helton-Thomas, Jalen Anderson, Markala
+ * Authors: Camya Helton-Thomas, Jalen Anderson, Markala
+ *
+ * Synchronization:
+ * Mutex locks, condition variable, and ticket-based waiter
  */
-
-
-/*SECTION 1: INCLUDE LIBRARIES
-  *  - Standard input/output
-   * - pthreads
-  *  - Semaphores or mutexes
-  *  - Time/delay functions
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-
 #include <unistd.h>
 
+/* SECTION 1: DEFINE CONSTANTS */
 
-/*SECTION 2: DEFINE CONSTANTS
-  *  - Number of philosophers = 5
-  *  - Number of forks = 5
-*/
-
-int philosophers= 7;
-
-int forks = 7;
-
-/*SECTION 3: DECLARE GLOBAL VARIABLES
-  *  - Array for five forks
-   * - Array for philosopher states
-   * - Array for completed eating cycles
-   * - Number of eating cycles (T)
-    *- Synchronization variables
-*/
-
-
+#define NUM_PHILOSOPHERS 7
 
 #define THINKING 0
 #define HUNGRY 1
 #define EATING 2
 #define DONE 3
 
-pthread_mutex_t forkArray[7];
-
-pthread_mutex_t displayMutex;
+/* SECTION 2: GLOBAL VARIABLES */
 
 pthread_mutex_t waiterMutex;
-
 pthread_cond_t waiterCond;
-int states[5];
-int forkInUse[7];
-int completed[7];
 
-int completedCycles[7];
+int states[NUM_PHILOSOPHERS];
+int forkInUse[NUM_PHILOSOPHERS];
+int completedCycles[NUM_PHILOSOPHERS];
+
 int T;
 int nextTicket = 0;
 int servingTicket = 0;
 
-/*SECTION 4: CREATE DISPLAY FUNCTION
- *   - Show five philosophers around a table
- *   - Display each philosopher's current state
- *   - Display the status of each fork
- *   - Show completed eating cycles
- */
+/* SECTION 3: GET PHILOSOPHER STATE */
 
-const char *getStateName(int state) {
-    switch (state) {
+const char *getStateName(int state)
+{
+    switch (state)
+    {
         case THINKING:
             return "Thinking";
 
@@ -87,64 +60,62 @@ const char *getStateName(int state) {
     }
 }
 
+/* SECTION 4: DISPLAY FUNCTION */
 
 void display(void)
 {
     pthread_mutex_lock(&waiterMutex);
 
-    printf("\n Dining Philosophers\n");
+    printf("\n========== DINING PHILOSOPHERS ==========\n");
 
-    for (int i = 0; i < 7; i++) {
+    printf("\nPhilosopher States:\n");
+
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
         printf("Philosopher %d: %s\n",
                i, getStateName(states[i]));
     }
 
-    printf("\n Eating Cycles\n");
+    printf("\nEating Cycles:\n");
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
         printf("Philosopher %d: %d/%d cycles\n",
                i, completedCycles[i], T);
     }
 
-    printf("\n Fork Status\n");
+    printf("\nFork Status:\n");
 
-    for (int i = 0; i < 7; i++) {
-        if (forkInUse[i] == 0) {
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
+        if (forkInUse[i] == 0)
+        {
             printf("Fork %d: Available\n", i);
-        } else {
-            printf("Fork %d: In use\n" + forkInUse[i], i);
+        }
+        else
+        {
+            printf("Fork %d: In use\n", i);
         }
     }
+
+    printf("=========================================\n");
 
     pthread_mutex_unlock(&waiterMutex);
 }
 
-
-/*SECTION 5: CREATE PHILOSOPHER FUNCTION
-  *  - Get philosopher ID
-  *  - Repeat until T eating cycles are completed
-  *  - Change state to THINKING
-  *  - Change state to HUNGRY
-  *  - Wait until both forks can be acquired safely
-  *  - Pick up forks
-  *  - Change state to EATING
-  *  - Eat
-  *  - Release both forks
-  *  - Update completed cycles
-  *  - Change state to THINKING or DONE
- */
-
+/* SECTION 5: PHILOSOPHER FUNCTION */
 
 void *philosopher(void *arg)
 {
     int id = *(int *)arg;
 
     int leftFork = id;
-    int rightFork = (id + 1) % 7;
+    int rightFork = (id + 1) % NUM_PHILOSOPHERS;
 
     while (1)
     {
-        // Check if this philosopher has completed all cycles
+        /* Check completed eating cycles */
+
         pthread_mutex_lock(&waiterMutex);
 
         if (completedCycles[id] >= T)
@@ -153,25 +124,32 @@ void *philosopher(void *arg)
             break;
         }
 
-        // Think
+        /* Philosopher starts thinking */
+
         states[id] = THINKING;
+
         pthread_mutex_unlock(&waiterMutex);
 
         display();
 
         sleep(1);
 
-        // Become hungry and receive a ticket
+        /* Philosopher becomes hungry */
+
         pthread_mutex_lock(&waiterMutex);
 
         states[id] = HUNGRY;
+
+        /* Assign a ticket */
+
         int ticket = nextTicket++;
 
         pthread_mutex_unlock(&waiterMutex);
 
         display();
 
-        // Wait for our turn and for both forks to be available
+        /* Wait for turn and available forks */
+
         pthread_mutex_lock(&waiterMutex);
 
         while (ticket != servingTicket ||
@@ -181,12 +159,22 @@ void *philosopher(void *arg)
             pthread_cond_wait(&waiterCond, &waiterMutex);
         }
 
-        // Pick up both forks
+        /* Pick up both forks */
+
         forkInUse[leftFork] = 1;
         forkInUse[rightFork] = 1;
 
-        // Eat
+        /* Advance ticket after acquiring forks */
+
+        servingTicket++;
+
+        /* Philosopher starts eating */
+
         states[id] = EATING;
+
+        /* Wake up the next waiting philosopher */
+
+        pthread_cond_broadcast(&waiterCond);
 
         pthread_mutex_unlock(&waiterMutex);
 
@@ -194,18 +182,21 @@ void *philosopher(void *arg)
 
         sleep(1);
 
-        // Put down both forks and finish one cycle
+        /* Philosopher finishes eating */
+
         pthread_mutex_lock(&waiterMutex);
+
+        /* Release both forks */
 
         forkInUse[leftFork] = 0;
         forkInUse[rightFork] = 0;
 
+        /* Update completed cycles */
+
         completedCycles[id]++;
 
-        // Advance to the next philosopher's ticket
-        servingTicket++;
+        /* Update philosopher state */
 
-        // Update the philosopher's state
         if (completedCycles[id] >= T)
         {
             states[id] = DONE;
@@ -215,7 +206,8 @@ void *philosopher(void *arg)
             states[id] = THINKING;
         }
 
-        // Wake up waiting philosophers
+        /* Notify waiting philosophers */
+
         pthread_cond_broadcast(&waiterCond);
 
         pthread_mutex_unlock(&waiterMutex);
@@ -226,62 +218,87 @@ void *philosopher(void *arg)
     return NULL;
 }
 
-
-
-/*SECTION 6: CREATE MAIN FUNCTION
-*  - Ask user for T
-*    - Validate input
-*    - Initialize five forks
-*    - Initialize philosopher states
-*    - Create five philosopher threads
-*    - Wait for all threads to finish
-*    - Display final results
-*    - Destroy synchronization resources
-*    - End program
-*/
+/* SECTION 6: MAIN FUNCTION */
 
 int main(void)
 {
     printf("Enter the number of eating cycles per philosopher: ");
 
-    if (scanf("%d", &T) != 1 || T < 1) {
-        printf("Invalid number of eating cycles per philosopher\n");
+    if (scanf("%d", &T) != 1 || T < 1)
+    {
+        printf("Invalid number of eating cycles.\n");
         return 1;
     }
 
+    /* Initialize synchronization variables */
+
     pthread_mutex_init(&waiterMutex, NULL);
-    pthread_mutex_init(&displayMutex, NULL);
     pthread_cond_init(&waiterCond, NULL);
 
-    for (int i = 0; i < 7; i++) {
-        pthread_mutex_init(&forkArray[i], NULL);
+    /* Initialize philosopher states and forks */
 
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
         states[i] = THINKING;
-        completedCycles[i] = 0;
         forkInUse[i] = 0;
+        completedCycles[i] = 0;
     }
 
     nextTicket = 0;
     servingTicket = 0;
 
-    pthread_t threads[20];
-    int philosopherIDs[7];
+    /* Create philosopher threads */
 
-    for (int i = 0; i < 7; i++) {
+    pthread_t threads[NUM_PHILOSOPHERS];
+    int philosopherIDs[NUM_PHILOSOPHERS];
+
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
         philosopherIDs[i] = i;
 
         pthread_create(&threads[i], NULL,
                        philosopher, &philosopherIDs[i]);
     }
 
-    for (int i = 0; i < 7; i++) {
+    /* Wait for all philosophers to finish */
+
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
         pthread_join(threads[i], NULL);
     }
+
+    /* Display final results */
+
+    printf("\n========== FINAL RESULTS ==========\n");
+
     display();
 
-    pthread_mutex_destroy(&waiterCond);
+    int totalMeals = 0;
+
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++)
+    {
+        totalMeals += completedCycles[i];
+    }
+
+    printf("\nTotal meals completed: %d\n", totalMeals);
+    printf("Expected total meals: %d\n",
+           NUM_PHILOSOPHERS * T);
+
+    if (totalMeals == NUM_PHILOSOPHERS * T)
+    {
+        printf("SUCCESS: All philosophers completed their meals.\n");
+    }
+    else
+    {
+        printf("ERROR: Some meals were not completed.\n");
+    }
+
+    /* Destroy synchronization resources */
+
+    pthread_cond_destroy(&waiterCond);
     pthread_mutex_destroy(&waiterMutex);
-    pthread_cond_destroy(&displayMutex);
+
+    printf("\nSimulation finished.\n");
 
     return 0;
 }

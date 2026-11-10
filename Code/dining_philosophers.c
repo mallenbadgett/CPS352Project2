@@ -112,7 +112,7 @@ void display(void)
         if (forkInUse[i] == 0) {
             printf("Fork %d: Available\n", i);
         } else {
-            printf("Fork %d: In use\n", i);
+            printf("Fork %d: In use\n" + "by" + forkInUse, i);
         }
     }
 

@@ -26,9 +26,9 @@
   *  - Number of forks = 5
 */
 
-int philosophers= 6;
+int philosophers= 7;
 
-int forks = 6;
+int forks = 7;
 
 /*SECTION 3: DECLARE GLOBAL VARIABLES
   *  - Array for five forks
@@ -45,7 +45,7 @@ int forks = 6;
 #define EATING 2
 #define DONE 3
 
-pthread_mutex_t forkArray[6];
+pthread_mutex_t forkArray[7];
 
 pthread_mutex_t displayMutex;
 
@@ -53,10 +53,10 @@ pthread_mutex_t waiterMutex;
 
 pthread_cond_t waiterCond;
 int states[5];
-int forkInUse[6];
-int completed[6];
+int forkInUse[7];
+int completed[7];
 
-int completedCycles[6];
+int completedCycles[7];
 int T;
 int nextTicket = 0;
 int servingTicket = 0;
@@ -94,21 +94,21 @@ void display(void)
 
     printf("\n Dining Philosophers\n");
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         printf("Philosopher %d: %s\n",
                i, getStateName(states[i]));
     }
 
     printf("\n Eating Cycles\n");
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         printf("Philosopher %d: %d/%d cycles\n",
                i, completedCycles[i], T);
     }
 
     printf("\n Fork Status\n");
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         if (forkInUse[i] == 0) {
             printf("Fork %d: Available\n", i);
         } else {
@@ -140,7 +140,7 @@ void *philosopher(void *arg)
     int id = *(int *)arg;
 
     int leftFork = id;
-    int rightFork = (id + 1) % 6;
+    int rightFork = (id + 1) % 7;
 
     while (1)
     {
@@ -253,7 +253,7 @@ int main(void)
     pthread_mutex_init(&displayMutex, NULL);
     pthread_cond_init(&waiterCond, NULL);
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         pthread_mutex_init(&forkArray[i], NULL);
 
         states[i] = THINKING;
@@ -265,16 +265,16 @@ int main(void)
     servingTicket = 0;
 
     pthread_t threads[20];
-    int philosopherIDs[6];
+    int philosopherIDs[7];
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         philosopherIDs[i] = i;
 
         pthread_create(&threads[i], NULL,
                        philosopher, &philosopherIDs[i]);
     }
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         pthread_join(threads[i], NULL);
     }
     display();
